@@ -32,9 +32,10 @@ func CheckFileType(filePath string) bool {
 
 // ExtractMetadata determines the file type and extracts metadata
 func (lm *LibraryManager) ExtractMetadata(filePath string) (Metadata, error) {
-	if CheckFileType(filePath) == ".epub" {
+	fileType := filepath.Ext(filePath)
+	if fileType == ".epub" {
 		return ExtractMetadataFromEPUB(filePath)
-	} else if CheckFileType(filePath) == ".pdf" {
+	} else if fileType == ".pdf" {
 		return ExtractMetadataFromPDF(filePath)
 	}
 	return Metadata{}, errors.New("unsupported file type")

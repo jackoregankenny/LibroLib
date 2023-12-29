@@ -1,21 +1,68 @@
 package library
 
-// Database handles database operations
+import (
+	"database/sql"
+	"log"
+
+	_ "github.com/mattn/go-sqlite3"
+)
+
 type Database struct {
-	// DB connection and other details
+	*sql.DB
 }
 
-// NewDatabase initializes a new database instance
-func NewDatabase() *Database {
-	// Connect to your database and return the instance
+func NewDatabase(dbPath string) *Database {
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &Database{DB: db}
 }
 
-// AddBook adds a book and its metadata to the database
+func (db *Database) InitSchema() error {
+	query := `
+    CREATE TABLE IF NOT EXISTS books (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        author TEXT,
+        genre TEXT,
+        publication_date TEXT,
+        publisher TEXT,
+        language TEXT,
+        isbn TEXT,
+        page_count INTEGER,
+        read BOOLEAN,
+        rating INTEGER,
+        notes TEXT,
+        cover_image_path TEXT
+    );`
+	_, err := db.Exec(query)
+	return err
+}
+
 func (db *Database) AddBook(metadata Metadata) error {
-	// Implement database insertion logic
+	query := `INSERT INTO books (title, author, genre, publication_date, publisher, language, isbn, page_count, read, rating, notes, cover_image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	_, err := db.Exec(query, metadata.Title, metadata.Author, metadata.Genre, metadata.PublicationDate, metadata.Publisher, metadata.Language, metadata.ISBN, metadata.PageCount, metadata.Read, metadata.Rating, metadata.Notes, metadata.CoverImagePath)
+	return err
 }
 
-// SearchBooks searches books based on given criteria
-func (db *Database) SearchBooks(query string) ([]Metadata, error) {
-	// Implement search logic
+func (db *Database) SearchBooks(searchTerm string) ([]Metadata, error) {
+	query := `SELECT title, author, genre, publication_date, publisher, language, isbn, page_count, read, rating, notes, cover_image_path FROM books WHERE title LIKE ? OR author LIKE ?`
+	rows, err := db.Query(query, "%"+searchTerm+"%", "%"+searchTerm+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var books []Metadata
+	for rows.Next() {
+		var metadata Metadata
+		err = rows.Scan(&metadata.Title, &metadata.Author, &metadata.Genre, &metadata.PublicationDate, &metadata.Publisher, &metadata.Language, &metadata.ISBN, &metadata.PageCount, &metadata.Read, &metadata.Rating, &metadata.Notes, &metadata.CoverImagePath)
+		if err != nil {
+			return nil, err
+		}
+		books = append(books, metadata)
+	}
+	return books, nil
 }
