@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"fmt"
 
 	"LibroLib/library" // Update this import path as necessary
 
@@ -32,6 +33,7 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
+// SetLibraryPath updates the library path based on user input
 func (a *App) SetLibraryPath(path string, dbPath string) {
 	if a.LibManager == nil {
 		a.LibManager = library.NewLibraryManager(path, dbPath)
@@ -41,6 +43,11 @@ func (a *App) SetLibraryPath(path string, dbPath string) {
 		// Update the database path if needed
 		// a.LibManager.UpdateDatabasePath(dbPath) // This would be a new method in LibraryManager
 	}
+}
+
+// Greet returns a greeting for the given name
+func (a *App) Greet(name string) string {
+	return fmt.Sprintf("Hello %s, welcome to LibroLib!", name)
 }
 
 func main() {

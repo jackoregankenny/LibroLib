@@ -1,28 +1,27 @@
-import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
+import { useState } from 'react';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 import './App.css';
-import {Greet} from "../wailsjs/go/main/App";
+import Home from './components/Home';  // Assume this is your Home component
+import Library from './components/Library';  // Your Library view
+import BookDetails from './components/BookDetails';  // Book details page
 
 function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e) => setName(e.target.value);
-    const updateResultText = (result) => setResultText(result);
-
-    function greet() {
-        Greet(name).then(updateResultText);
-    }
-
     return (
-        <div id="App">
-            <img src={logo} id="logo" alt="logo"/>
-            <div id="result" className="result">{resultText}</div>
-            <div id="input" className="input-box">
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
-                <button className="btn" onClick={greet}>Greet</button>
-            </div>
-        </div>
-    )
+        <Router>
+            <nav>
+                <Link to="/">Home</Link>
+                <Link to="/library">Library</Link>
+                {/* Add more navigation links as needed */}
+            </nav>
+
+            <Switch>
+                <Route exact path="/" component={Home} />
+                <Route path="/library" component={Library} />
+                <Route path="/book/:id" component={BookDetails} />
+                {/* Define other routes here */}
+            </Switch>
+        </Router>
+    );
 }
 
-export default App
+export default App;

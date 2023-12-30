@@ -4,8 +4,7 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/bmaupin/go-epub"
-	"github.com/unidoc/unipdf/v3/model"
+	"github.com/taylorskalyo/goreader/epub"
 )
 
 // Metadata struct holds e-book metadata
@@ -24,10 +23,10 @@ type Metadata struct {
 	CoverImagePath  string // File path or URL to the cover image
 }
 
-// CheckFileType checks if the file is an e-book (PDF or EPUB)
+// CheckFileType checks if the file is an e-book (EPUB)
 func CheckFileType(filePath string) bool {
 	extension := filepath.Ext(filePath)
-	return extension == ".pdf" || extension == ".epub"
+	return extension == ".epub"
 }
 
 // ExtractMetadata determines the file type and extracts metadata
@@ -35,49 +34,30 @@ func (lm *LibraryManager) ExtractMetadata(filePath string) (Metadata, error) {
 	fileType := filepath.Ext(filePath)
 	if fileType == ".epub" {
 		return ExtractMetadataFromEPUB(filePath)
-	} else if fileType == ".pdf" {
-		return ExtractMetadataFromPDF(filePath)
 	}
 	return Metadata{}, errors.New("unsupported file type")
 }
 
-// ExtractMetadataFromEPUB extracts metadata from an EPUB file
 func ExtractMetadataFromEPUB(filePath string) (Metadata, error) {
 	var metadata Metadata
 
-	epub, err := epub.Open(filePath)
+	rc, err := epub.OpenReader(filePath)
 	if err != nil {
 		return metadata, err
 	}
-	defer epub.Close()
+	defer rc.Close()
 
-	metadata.Title = epub.Title
-	metadata.Author = epub.Creator
-	metadata.PublicationDate = epub.Published
-	metadata.Publisher = epub.Publisher
-	metadata.Language = epub.Language
-	// Other fields like Genre, ISBN, etc. might need manual input
+	// Assuming there's only one rootfile (common case)
+	book := rc.Rootfiles[0]
 
-	return metadata, nil
-}
-
-// ExtractMetadataFromPDF extracts metadata from a PDF file
-func ExtractMetadataFromPDF(filePath string) (Metadata, error) {
-	var metadata Metadata
-
-	pdfDoc, err := model.NewPdfReaderFromFile(filePath, nil)
-	if err != nil {
-		return metadata, err
-	}
-
-	docInfo, err := pdfDoc.GetPdfProducer()
-	if err != nil {
-		return metadata, err
-	}
-
-	metadata.Title = docInfo.GetTitle()
-	metadata.Author = docInfo.GetAuthor()
-	// PDFs generally don't contain genre, rating, or read status.
+	// Extract metadata from the book
+	metadata.Title = book.Title
+	metadata.Author = book.Creator      // Assuming 'Creator' field exists for Author
+	metadata.Language = book.Language   // Assuming 'Language' field exists
+	metadata.Publisher = book.Publisher // Assuming 'Publisher' field exists
+	// Add other necessary fields based on available goreader metadata fields.
+	// For example, metadata.Author = book.Creator
+	// Note: Adjust according to the actual fields available in the EPUB book struct
 
 	return metadata, nil
 }
