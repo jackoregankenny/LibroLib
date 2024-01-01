@@ -11,6 +11,23 @@ type Database struct {
 	*sql.DB
 }
 
+// SetPath sets a new path for the database connection
+func (db *Database) SetPath(newPath string) error {
+	// Close the existing database connection if open
+	if db.DB != nil {
+		if err := db.Close(); err != nil {
+			return err
+		}
+	}
+	// Open a new database connection with the new path
+	newDb, err := sql.Open("sqlite3", newPath)
+	if err != nil {
+		return err
+	}
+	db.DB = newDb
+	return nil
+}
+
 func NewDatabase(dbPath string) *Database {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
