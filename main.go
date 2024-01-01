@@ -1,15 +1,12 @@
 package main
 
 import (
+	"LibroLib/library" // Ensure correct import path
 	"context"
 	"embed"
-	"fmt"
-
-	"LibroLib/library" // Update this import path as necessary
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 //go:embed all:frontend/dist
@@ -27,10 +24,12 @@ func NewApp() *App {
 }
 
 // startup is called when the app starts. The context is saved
-// so we can call the runtime methods.
-// Paths are not set here anymore, waiting for user input through the UI.
-func (a *App) startup(ctx context.Context) {
+// so we can call the runtime methods. Now with Wails bindings.
+func (a *App) startup(ctx context.Context, runtime *wails.Runtime) {
 	a.ctx = ctx
+	a.LibManager = library.NewLibraryManager("default library path", "default db path")
+	runtime.Bind(a.LibManager.AddBookToLibrary) // Binding AddBookToLibrary method
+	// Bind other methods as needed
 }
 
 // SetLibraryPath updates the library path based on user input
@@ -38,38 +37,29 @@ func (a *App) SetLibraryPath(path string, dbPath string) {
 	if a.LibManager == nil {
 		a.LibManager = library.NewLibraryManager(path, dbPath)
 	} else {
-		// If the Library Manager is already initialized, handle updates to paths
-		a.LibManager.LibraryPath = path
-		// Update the database path if needed
-		// a.LibManager.UpdateDatabasePath(dbPath) // This would be a new method in LibraryManager
+		// If the Library Manager is already initialized, update the paths
+		a.LibManager.SetLibraryPath(path, dbPath)
 	}
-}
-
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, welcome to LibroLib!", name)
 }
 
 func main() {
-	// Create an instance of the app struct
+	// Wails app configuration
 	app := NewApp()
-
-	// Create application with options
-	err := wails.Run(&options.App{
-		Title:  "LibroLib",
-		Width:  1024,
-		Height: 768,
-		AssetServer: &assetserver.Options{
-			Assets: assets,
-		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.startup,
-		Bind: []interface{}{
-			app,
-		},
+	wails.Run(&options.App{
+		Title:             "LibroLib E-Book Library",
+		Width:             1024,
+		Height:            768,
+		DisableResize:     false,
+		Fullscreen:        false,
+		Frameless:         false,
+		MinWidth:          400,
+		MinHeight:         400,
+		MaxWidth:          1920,
+		MaxHeight:         1080,
+		StartHidden:       false,
+		HideWindowOnClose: false,
+		Assets:            assets,
+		BackgroundColour:  &options.RGBA{R: 255, G: 255, B: 255, A: 0},
+		OnStartup:         app.startup,
 	})
-
-	if err != nil {
-		println("Error:", err.Error())
-	}
 }

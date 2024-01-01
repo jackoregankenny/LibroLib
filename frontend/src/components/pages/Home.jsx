@@ -5,7 +5,7 @@ import React from 'react';
 function Library() {
     return (
         <div>
-            <h1>Library</h1>
+            <h1>Home</h1>
             {/* Library component content goes here */}
         </div>
     );

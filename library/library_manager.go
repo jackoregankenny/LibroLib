@@ -182,5 +182,27 @@ func (lm *LibraryManager) OrganizeLibrary(organizationMethod string) error {
 			}
 		}
 	}
+
+	func (lm *LibraryManager) GetBooks() ([]Metadata, error) {
+		// Logic to retrieve and return all books from the database
+		rows, err := lm.db.Query("SELECT id, title, author, genre, cover_image_path FROM books")
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		var books []Metadata
+		for rows.Next() {
+			var book Metadata
+			err = rows.Scan(&book.ID, &book.Title, &book.Author, &book.Genre, &book.CoverImagePath)
+			if err != nil {
+				return nil, err
+			}
+			books = append(books, book)
+		}
+
+		return books, nil
+	}
+
 	return nil
 }
