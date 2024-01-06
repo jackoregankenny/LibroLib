@@ -9,6 +9,7 @@ import (
 
 // Metadata struct holds e-book metadata
 type Metadata struct {
+	ID              int // Unique ID for the book
 	Title           string
 	Author          string
 	Genre           string
@@ -21,6 +22,7 @@ type Metadata struct {
 	Rating          int // Rating on a scale of 1-5
 	Notes           string
 	CoverImagePath  string // File path or URL to the cover image
+	FilePath        string // File path to the e-book file
 }
 
 // CheckFileType checks if the file is an e-book (EPUB)

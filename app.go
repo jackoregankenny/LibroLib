@@ -6,12 +6,15 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"LibroLib/library"
 )
 
 // App struct holds application state and methods
 type App struct {
-	ctx    context.Context
-	server *http.Server
+	ctx            context.Context
+	server         *http.Server
+	LibraryManager *library.LibraryManager
 }
 
 // NewApp creates a new instance of App
@@ -71,4 +74,17 @@ func (a *App) stopServer() {
 // handleRoot handles the root request
 func (a *App) handleRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Welcome to the app!")
+}
+
+func (a *App) GetBooks() ([]library.Metadata, error) {
+	return a.LibraryManager.GetBooks()
+}
+
+func (a *App) AddBookToLibrary(bookData library.Metadata) error {
+	// Assuming 'originalPath' is part of bookData
+	return a.LibraryManager.AddBookToLibrary(bookData.FilePath)
+}
+
+func (a *App) ExtractEPUBMetadata(filePath string) (library.Metadata, error) {
+	return a.LibraryManager.ExtractMetadata(filePath)
 }

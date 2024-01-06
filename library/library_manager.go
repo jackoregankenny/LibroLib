@@ -2,6 +2,7 @@ package library
 
 import (
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -25,26 +26,64 @@ func NewLibraryManager(libraryPath, dbPath string) *LibraryManager {
 	}
 }
 
-// AddBookToLibrary adds a new book to the library
-func (lm *LibraryManager) AddBookToLibrary(filePath string) error {
+func (lm *LibraryManager) AddBookToLibrary(originalPath string) error {
 	// Check if the file type is supported
-	if !CheckFileType(filePath) {
+	if !CheckFileType(originalPath) {
 		return errors.New("unsupported file type")
 	}
 
-	// Add book file to library folder
-	if err := lm.AddBook(filePath); err != nil {
+	// Define the library directory within the documents folder
+	libraryPath := filepath.Join(os.Getenv("HOME"), "Documents", "library")
+
+	// Create the library directory if it doesn't exist
+	if err := os.MkdirAll(libraryPath, os.ModePerm); err != nil {
+		return err
+	}
+
+	// Copy the file to the library directory
+	fileName := filepath.Base(originalPath)
+	destPath := filepath.Join(libraryPath, fileName)
+	if err := lm.copyFile(originalPath, destPath); err != nil {
 		return err
 	}
 
 	// Extract metadata
-	metadata, err := lm.ExtractMetadata(filePath)
-	if err != nil {
-		return err
+	var metadata Metadata
+	var err error
+	if CheckFileType(originalPath) {
+		metadata, err = lm.ExtractMetadata(destPath)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Set default or basic metadata for non-EPUB files
+		metadata = Metadata{
+			Title:  fileName,
+			Author: "Unknown",
+			// Other fields...
+		}
 	}
 
 	// Add metadata to database
 	return lm.db.AddBook(metadata)
+}
+
+// Helper function to copy files
+func (lm *LibraryManager) copyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }
 
 // SearchLibrary searches for books in the library

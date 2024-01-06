@@ -20,7 +20,14 @@ import { BrowserRouter as Router, Routes, Route, Link as RouterLink } from 'reac
 import Home from './components/pages/Home';
 import Library from './components/pages/Library';
 import BookDetails from './components/pages/BookDetails';
+import { runtime } from '@wails/runtime';
+import AddBookModal from './components/pages/addbookmodal';
 
+const { isOpen, onOpen, onClose } = useDisclosure();
+const [isAddBookModalOpen, setAddBookModalOpen] = useState(false);
+
+const openAddBookModal = () => setAddBookModalOpen(true);
+const closeAddBookModal = () => setAddBookModalOpen(false);
 // Custom theme for E Ink appearance
 const theme = extendTheme({
   colors: {
@@ -60,7 +67,7 @@ function App() {
               <VStack spacing={4} m={4}>
                 <SidebarItem to="/" icon={InfoIcon} label="Home" />
                 <SidebarItem to="/library" icon={SearchIcon} label="Library" />
-                <SidebarItem to="/add" icon={AddIcon} label="Add Book" />
+                <SidebarItem icon={AddIcon} label="Add Book" onClick={openAddBookModal} />
                 {/* Add more SidebarItem components as needed */}
               </VStack>
             </DrawerContent>
@@ -78,7 +85,7 @@ function App() {
             <VStack spacing={4} align="stretch">
               <SidebarItem to="/" icon={InfoIcon} label="Home" />
               <SidebarItem to="/library" icon={SearchIcon} label="Library" />
-              <SidebarItem to="/add" icon={AddIcon} label="Add Book" />
+              <SidebarItem icon={AddIcon} label="Add Book" onClick={openAddBookModal} />
               {/* Add more SidebarItem components as needed */}
             </VStack>
           </Box>
@@ -100,11 +107,14 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/library" element={<Library />} />
               <Route path="/add" element={<BookDetails />} />
+
               {/* Add more routes as needed */}
             </Routes>
           </Box>
         </Box>
       </Router>
+      <AddBookModal isOpen={isModalOpen} onClose={handleModalClose} />
+
     </ChakraProvider>
   );
 }

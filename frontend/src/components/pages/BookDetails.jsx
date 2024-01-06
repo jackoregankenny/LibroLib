@@ -1,14 +1,12 @@
-// src/components/Library.jsx
-
 import React from 'react';
 
-function Library() {
+function BookDetails() {
     return (
         <div>
-            <h1>Library book details</h1>
-            {/* Library component content goes here */}
+            <h1>Library Book Details</h1>
+            {/* BookDetails component content goes here */}
         </div>
     );
 }
 
-export default Library;
+export default BookDetails;

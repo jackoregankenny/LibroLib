@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, SimpleGrid, Image, Text } from '@chakra-ui/react';
+import { runtime } from '@wails/runtime';
 
 // BookCard component to display each book
 const BookCard = ({ book }) => (
@@ -25,17 +26,14 @@ const Library = () => {
   const [books, setBooks] = useState([]);
 
   useEffect(() => {
-    // Replace '/api/books' with the actual endpoint provided by your Go backend
-    fetch('/api/books')
-      .then((res) => res.json())
-      .then((data) => setBooks(data))
-      .catch((error) => console.error("Error fetching books:", error));
+    // Use Wails runtime to call the GetBooks method in the Go backend
+    runtime.Invoke("GetBooks").then(setBooks).catch(console.error);
   }, []);
 
   return (
     <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={10}>
       {books.map((book) => (
-        <BookCard key={book.ISBN} book={book} />
+        <BookCard key={book.ID} book={book} />
       ))}
     </SimpleGrid>
   );
